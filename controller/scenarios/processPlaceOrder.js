@@ -49,9 +49,7 @@ function main(organizationIdentifier) {
                 bearer: credentials.access_token
             },
             json: true,
-            qs: {
-                day: moment().add(1, 'day').format('YYYYMMDD')
-            }
+            qs: {}
         }).then((body) => body.data);
         debug('パフォーマンスが見つかりました。', performances.length);
         if (performances.length === 0) {

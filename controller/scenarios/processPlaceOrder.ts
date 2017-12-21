@@ -48,7 +48,7 @@ export async function main(organizationIdentifier: string) {
             },
             json: true,
             qs: {
-                day: moment().add(1, 'day').format('YYYYMMDD')
+                // day: moment().add(1, 'day').format('YYYYMMDD')
             }
         }
     ).then((body) => <any[]>body.data);
