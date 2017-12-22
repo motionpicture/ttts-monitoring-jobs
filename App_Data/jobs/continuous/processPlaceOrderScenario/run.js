@@ -32,8 +32,9 @@ setInterval(() => {
     setTimeout(() => __awaiter(this, void 0, void 0, function* () {
         try {
             // tslint:disable-next-line:insecure-random no-magic-numbers
-            // const duration = Math.floor(500000 * Math.random() + 300000);
-            yield processPlaceOrder.main(organizationIdentifier);
+            const duration = Math.floor(500000 * Math.random() + 300000);
+            // const duration = 10000;
+            yield processPlaceOrder.main(organizationIdentifier, duration);
         }
         catch (error) {
             console.error(error, 'organizationIdentifier:', organizationIdentifier);

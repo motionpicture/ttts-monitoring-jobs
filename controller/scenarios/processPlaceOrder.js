@@ -20,7 +20,7 @@ const util = require("util");
 const debug = createDebug('ttts-monitoring-jobs');
 const API_ENDPOINT = process.env.TTTS_API_ENDPOINT;
 // tslint:disable-next-line:max-func-body-length
-function main(organizationIdentifier) {
+function main(organizationIdentifier, durationInMilliseconds) {
     return __awaiter(this, void 0, void 0, function* () {
         // get token
         const scopes = [
@@ -42,17 +42,19 @@ function main(organizationIdentifier) {
             },
             json: true
         });
-        debug('認証情報を取得できました。', credentials.expires_in);
+        debug('認証情報を取得できました。', credentials.access_token);
         // パフォーマンス検索
+        debug('パフォーマンスを検索しています...');
         const performances = yield request.get(`${API_ENDPOINT}/performances`, {
             auth: { bearer: credentials.access_token },
             json: true,
             qs: {
                 start_from: moment().toDate(),
                 // tslint:disable-next-line:no-magic-numbers
-                start_through: moment().add(1, 'months').toDate()
+                start_through: moment().add(1, 'month').toDate(),
+                limit: 50
             }
-        }).then((body) => body.data);
+        }).catch(handleError).then((body) => body.data);
         debug('パフォーマンスが見つかりました。', performances.length);
         if (performances.length === 0) {
             throw new Error('パフォーマンスがありません。');
@@ -60,7 +62,7 @@ function main(organizationIdentifier) {
         // イベント選択時間
         debug('パフォーマンスを決めています...');
         // tslint:disable-next-line:no-magic-numbers
-        yield wait(5000);
+        yield wait(durationInMilliseconds / 6);
         // tslint:disable-next-line:insecure-random
         const performance = performances[Math.floor(performances.length * Math.random())];
         // 取引開始
@@ -73,12 +75,12 @@ function main(organizationIdentifier) {
                 seller_identifier: organizationIdentifier,
                 purchaser_group: ttts.factory.person.Group.Customer
             }
-        }).then((body) => body);
+        }).catch(handleError).then((body) => body);
         debug('取引が開始されました。', transaction.id);
         // 仮予約
         debug('券種を選択しています...');
         // tslint:disable-next-line:no-magic-numbers
-        yield wait(5000);
+        yield wait(durationInMilliseconds / 6);
         let ticketType = performance.attributes.ticket_types[0];
         let seatReservationAuthorizeAction = yield request.post(`${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/actions/authorize/seatReservation`, {
             auth: { bearer: credentials.access_token },
@@ -90,16 +92,16 @@ function main(organizationIdentifier) {
                         watcher_name: ''
                     }]
             }
-        }).then((body) => body);
+        }).catch(handleError).then((body) => body);
         debug('仮予約が作成されました。', seatReservationAuthorizeAction.result.tmpReservations[0].payment_no);
         debug('券種を変更しています...');
         // tslint:disable-next-line:no-magic-numbers
-        yield wait(5000);
+        yield wait(durationInMilliseconds / 6);
         // 仮予約削除
         yield request.delete(`${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/actions/authorize/seatReservation/${seatReservationAuthorizeAction.id}`, {
             auth: { bearer: credentials.access_token },
             json: true
-        }).then((body) => body);
+        }).catch(handleError).then((body) => body);
         debug('仮予約が削除されました。');
         // 再仮予約
         ticketType = performance.attributes.ticket_types[0];
@@ -113,7 +115,7 @@ function main(organizationIdentifier) {
                         watcher_name: ''
                     }]
             }
-        }).then((body) => body);
+        }).catch(handleError).then((body) => body);
         debug('仮予約が作成されました。', seatReservationAuthorizeAction.result.tmpReservations[0].payment_no);
         const amount = seatReservationAuthorizeAction.result.price;
         const orderIdPrefix = util.format('%s%s%s', moment().format('YYYYMMDD'), performance.attributes.day, 
@@ -126,7 +128,7 @@ function main(organizationIdentifier) {
         // 購入者情報登録
         debug('購入者情報を入力しています...');
         // tslint:disable-next-line:no-magic-numbers
-        yield wait(5000);
+        yield wait(durationInMilliseconds / 6);
         let customerContact = {
             last_name: 'せい',
             first_name: 'めい',
@@ -138,19 +140,19 @@ function main(organizationIdentifier) {
             auth: { bearer: credentials.access_token },
             json: true,
             body: customerContact
-        }).then((body) => body);
+        }).catch(handleError).then((body) => body);
         debug('購入者情報が登録されました。', customerContact.tel);
         // 確定
         debug('最終確認しています...');
         // tslint:disable-next-line:no-magic-numbers
-        yield wait(5000);
+        yield wait(durationInMilliseconds / 6);
         const transactionResult = yield request.post(`${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/confirm`, {
             auth: { bearer: credentials.access_token },
             json: true,
             body: {
                 payment_method: ttts.factory.paymentMethodType.CreditCard
             }
-        }).then((body) => body);
+        }).catch(handleError).then((body) => body);
         debug('取引確定です。', transactionResult.eventReservations[0].payment_no);
         // send an email
         const content = `Dear ${customerContact.last_name} ${customerContact.first_name}
@@ -219,4 +221,7 @@ function wait(waitInMilliseconds) {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve) => setTimeout(resolve, waitInMilliseconds));
     });
+}
+function handleError(response) {
+    throw new Error(response.error);
 }
