@@ -21,7 +21,8 @@ if (process.env.CONTINUOUS_SCENARIOS_STOPPED === '1') {
     process.exit(0);
 }
 debug('start executing scenarios...');
-const INTERVAL = 300000;
+// tslint:disable-next-line:no-magic-numbers
+const INTERVAL = parseInt(process.env.CONTINUOUS_SCENARIOS_INTERVAL_IN_SECONDS, 10) * 1000;
 ttts.mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default);
 setInterval(() => {
     // 0-{INTERVAL}の間でランダムにインターバルを置いてシナリオを実行する

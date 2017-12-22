@@ -45,15 +45,17 @@ function main(organizationIdentifier) {
         debug('認証情報を取得できました。', credentials.expires_in);
         // パフォーマンス検索
         const performances = yield request.get(`${API_ENDPOINT}/performances`, {
-            auth: {
-                bearer: credentials.access_token
-            },
+            auth: { bearer: credentials.access_token },
             json: true,
-            qs: {}
+            qs: {
+                start_from: moment().toDate(),
+                // tslint:disable-next-line:no-magic-numbers
+                start_through: moment().add(1, 'months').toDate()
+            }
         }).then((body) => body.data);
         debug('パフォーマンスが見つかりました。', performances.length);
         if (performances.length === 0) {
-            throw new Error('no available events');
+            throw new Error('パフォーマンスがありません。');
         }
         // イベント選択時間
         debug('パフォーマンスを決めています...');
@@ -63,15 +65,13 @@ function main(organizationIdentifier) {
         const performance = performances[Math.floor(performances.length * Math.random())];
         // 取引開始
         const transaction = yield request.post(`${API_ENDPOINT}/transactions/placeOrder/start`, {
-            auth: {
-                bearer: credentials.access_token
-            },
+            auth: { bearer: credentials.access_token },
             json: true,
             body: {
                 // tslint:disable-next-line:no-magic-numbers
-                expires: moment().add(10, 'minutes').toISOString(),
+                expires: moment().add(15, 'minutes').toISOString(),
                 seller_identifier: organizationIdentifier,
-                purchaser_group: 'Customer'
+                purchaser_group: ttts.factory.person.Group.Customer
             }
         }).then((body) => body);
         debug('取引が開始されました。', transaction.id);
@@ -81,9 +81,7 @@ function main(organizationIdentifier) {
         yield wait(5000);
         let ticketType = performance.attributes.ticket_types[0];
         let seatReservationAuthorizeAction = yield request.post(`${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/actions/authorize/seatReservation`, {
-            auth: {
-                bearer: credentials.access_token
-            },
+            auth: { bearer: credentials.access_token },
             json: true,
             body: {
                 perfomance_id: performance.id,
@@ -99,18 +97,14 @@ function main(organizationIdentifier) {
         yield wait(5000);
         // 仮予約削除
         yield request.delete(`${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/actions/authorize/seatReservation/${seatReservationAuthorizeAction.id}`, {
-            auth: {
-                bearer: credentials.access_token
-            },
+            auth: { bearer: credentials.access_token },
             json: true
         }).then((body) => body);
         debug('仮予約が削除されました。');
         // 再仮予約
         ticketType = performance.attributes.ticket_types[0];
         seatReservationAuthorizeAction = yield request.post(`${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/actions/authorize/seatReservation`, {
-            auth: {
-                bearer: credentials.access_token
-            },
+            auth: { bearer: credentials.access_token },
             json: true,
             body: {
                 perfomance_id: performance.id,
@@ -141,9 +135,7 @@ function main(organizationIdentifier) {
             gender: '0'
         };
         customerContact = yield request.put(`${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/customerContact`, {
-            auth: {
-                bearer: credentials.access_token
-            },
+            auth: { bearer: credentials.access_token },
             json: true,
             body: customerContact
         }).then((body) => body);
@@ -153,9 +145,7 @@ function main(organizationIdentifier) {
         // tslint:disable-next-line:no-magic-numbers
         yield wait(5000);
         const transactionResult = yield request.post(`${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/confirm`, {
-            auth: {
-                bearer: credentials.access_token
-            },
+            auth: { bearer: credentials.access_token },
             json: true,
             body: {
                 payment_method: ttts.factory.paymentMethodType.CreditCard

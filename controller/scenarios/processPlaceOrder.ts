@@ -43,19 +43,19 @@ export async function main(organizationIdentifier: string) {
     const performances = await request.get(
         `${API_ENDPOINT}/performances`,
         {
-            auth: {
-                bearer: credentials.access_token
-            },
+            auth: { bearer: credentials.access_token },
             json: true,
             qs: {
-                // day: moment().add(1, 'day').format('YYYYMMDD')
+                start_from: moment().toDate(),
+                // tslint:disable-next-line:no-magic-numbers
+                start_through: moment().add(1, 'months').toDate()
             }
         }
     ).then((body) => <any[]>body.data);
     debug('パフォーマンスが見つかりました。', performances.length);
 
     if (performances.length === 0) {
-        throw new Error('no available events');
+        throw new Error('パフォーマンスがありません。');
     }
 
     // イベント選択時間
@@ -70,15 +70,13 @@ export async function main(organizationIdentifier: string) {
     const transaction = await request.post(
         `${API_ENDPOINT}/transactions/placeOrder/start`,
         {
-            auth: {
-                bearer: credentials.access_token
-            },
+            auth: { bearer: credentials.access_token },
             json: true,
             body: {
                 // tslint:disable-next-line:no-magic-numbers
-                expires: moment().add(10, 'minutes').toISOString(),
+                expires: moment().add(15, 'minutes').toISOString(),
                 seller_identifier: organizationIdentifier,
-                purchaser_group: 'Customer'
+                purchaser_group: ttts.factory.person.Group.Customer
             }
         }
     ).then((body) => body);
@@ -92,9 +90,7 @@ export async function main(organizationIdentifier: string) {
     let seatReservationAuthorizeAction = await request.post(
         `${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/actions/authorize/seatReservation`,
         {
-            auth: {
-                bearer: credentials.access_token
-            },
+            auth: { bearer: credentials.access_token },
             json: true,
             body: {
                 perfomance_id: performance.id,
@@ -114,9 +110,7 @@ export async function main(organizationIdentifier: string) {
     await request.delete(
         `${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/actions/authorize/seatReservation/${seatReservationAuthorizeAction.id}`,
         {
-            auth: {
-                bearer: credentials.access_token
-            },
+            auth: { bearer: credentials.access_token },
             json: true
         }
     ).then((body) => body);
@@ -127,9 +121,7 @@ export async function main(organizationIdentifier: string) {
     seatReservationAuthorizeAction = await request.post(
         `${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/actions/authorize/seatReservation`,
         {
-            auth: {
-                bearer: credentials.access_token
-            },
+            auth: { bearer: credentials.access_token },
             json: true,
             body: {
                 perfomance_id: performance.id,
@@ -171,9 +163,7 @@ export async function main(organizationIdentifier: string) {
     customerContact = await request.put(
         `${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/customerContact`,
         {
-            auth: {
-                bearer: credentials.access_token
-            },
+            auth: { bearer: credentials.access_token },
             json: true,
             body: customerContact
         }
@@ -187,9 +177,7 @@ export async function main(organizationIdentifier: string) {
     const transactionResult = await request.post(
         `${API_ENDPOINT}/transactions/placeOrder/${transaction.id}/confirm`,
         {
-            auth: {
-                bearer: credentials.access_token
-            },
+            auth: { bearer: credentials.access_token },
             json: true,
             body: {
                 payment_method: ttts.factory.paymentMethodType.CreditCard
