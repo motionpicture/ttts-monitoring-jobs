@@ -223,5 +223,16 @@ function wait(waitInMilliseconds) {
     });
 }
 function handleError(response) {
-    throw new Error(response.error);
+    let error;
+    if (response.error !== undefined && response.error.error !== undefined) {
+        error = new Error(response.error.error.message);
+        error.code = response.error.error.code;
+        error.name = response.error.error.name;
+    }
+    else {
+        error = new Error(response.message);
+        error.code = response.statusCode;
+        error.name = 'APIError';
+    }
+    throw error;
 }
