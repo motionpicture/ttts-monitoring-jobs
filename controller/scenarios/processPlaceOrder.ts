@@ -50,7 +50,7 @@ export async function main(organizationIdentifier: string, durationInMillisecond
                 start_from: moment().toDate(),
                 // tslint:disable-next-line:no-magic-numbers
                 start_through: moment().add(1, 'month').toDate(),
-                limit: 50
+                limit: 200
             }
         }
     ).catch(handleError).then((body) => <any[]>body.data);

@@ -52,7 +52,7 @@ function main(organizationIdentifier, durationInMilliseconds) {
                 start_from: moment().toDate(),
                 // tslint:disable-next-line:no-magic-numbers
                 start_through: moment().add(1, 'month').toDate(),
-                limit: 50
+                limit: 200
             }
         }).catch(handleError).then((body) => body.data);
         debug('パフォーマンスが見つかりました。', performances.length);
