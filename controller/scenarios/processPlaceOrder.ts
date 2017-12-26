@@ -11,13 +11,14 @@ import * as util from 'util';
 
 const debug = createDebug('ttts-monitoring-jobs');
 const API_ENDPOINT = <string>process.env.TTTS_API_ENDPOINT;
+const TTTS_API_RESOURECE_SERVER_IDENTIFIER = <string>process.env.TTTS_API_RESOURECE_SERVER_IDENTIFIER;
 
 // tslint:disable-next-line:max-func-body-length
 export async function main(organizationIdentifier: string, durationInMilliseconds: number) {
     // get token
     const scopes = [
-        'https://ttts-api-development.azurewebsites.net/performances.read-only',
-        'https://ttts-api-development.azurewebsites.net/transactions'
+        `${TTTS_API_RESOURECE_SERVER_IDENTIFIER}/performances.read-only`,
+        `${TTTS_API_RESOURECE_SERVER_IDENTIFIER}/transactions`
     ];
     const credentials = await request.post(
         `https://${<string>process.env.TTTS_API_AUTHORIZE_SERVER_DOMAIN}/token`,

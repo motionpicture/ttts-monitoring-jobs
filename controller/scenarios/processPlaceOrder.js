@@ -19,13 +19,14 @@ const request = require("request-promise-native");
 const util = require("util");
 const debug = createDebug('ttts-monitoring-jobs');
 const API_ENDPOINT = process.env.TTTS_API_ENDPOINT;
+const TTTS_API_RESOURECE_SERVER_IDENTIFIER = process.env.TTTS_API_RESOURECE_SERVER_IDENTIFIER;
 // tslint:disable-next-line:max-func-body-length
 function main(organizationIdentifier, durationInMilliseconds) {
     return __awaiter(this, void 0, void 0, function* () {
         // get token
         const scopes = [
-            'https://ttts-api-development.azurewebsites.net/performances.read-only',
-            'https://ttts-api-development.azurewebsites.net/transactions'
+            `${TTTS_API_RESOURECE_SERVER_IDENTIFIER}/performances.read-only`,
+            `${TTTS_API_RESOURECE_SERVER_IDENTIFIER}/transactions`
         ];
         const credentials = yield request.post(`https://${process.env.TTTS_API_AUTHORIZE_SERVER_DOMAIN}/token`, {
             auth: {
