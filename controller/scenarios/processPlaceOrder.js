@@ -124,8 +124,8 @@ function main(organizationIdentifier, durationInMilliseconds) {
         `00000000${seatReservationAuthorizeAction.result.tmpReservations[0].payment_no}`.slice(-8));
         debug('クレジットカードのオーソリをとります...', orderIdPrefix);
         // tslint:disable-next-line:max-line-length
-        const { creditCardAuthorizeAction, numberOfTryAuthorizeCreditCard } = yield authorieCreditCardUntilSuccess(transaction.agent.id, transaction.id, orderIdPrefix, amount);
-        debug('オーソリがとれました。取引ID:', creditCardAuthorizeAction.result.execTranResult.tranId);
+        const { creditCardAuthorizeAction, numberOfTryAuthorizeCreditCard } = yield authorieCreditCardUntilSuccess(credentials.access_token, transaction.id, orderIdPrefix, amount);
+        debug(`${numberOfTryAuthorizeCreditCard}回目でオーソリがとれました。アクションID:`, creditCardAuthorizeAction.id);
         // 購入者情報登録
         debug('購入者情報を入力しています...');
         // tslint:disable-next-line:no-magic-numbers
@@ -185,7 +185,7 @@ amount: ${transactionResult.order.price} ${transactionResult.order.priceCurrency
 exports.main = main;
 const RETRY_INTERVAL_IN_MILLISECONDS = 5000;
 const MAX_NUMBER_OF_RETRY = 10;
-function authorieCreditCardUntilSuccess(agentId, transactionId, orderIdPrefix, amount) {
+function authorieCreditCardUntilSuccess(accessToken, transactionId, orderIdPrefix, amount) {
     return __awaiter(this, void 0, void 0, function* () {
         let creditCardAuthorizeAction = null;
         let numberOfTryAuthorizeCreditCard = 0;
@@ -193,14 +193,21 @@ function authorieCreditCardUntilSuccess(agentId, transactionId, orderIdPrefix, a
             numberOfTryAuthorizeCreditCard += 1;
             yield wait(RETRY_INTERVAL_IN_MILLISECONDS);
             try {
-                creditCardAuthorizeAction = yield ttts.service.transaction.placeOrderInProgress.action.authorize.creditCard.create(agentId, transactionId, 
-                // 試行毎にオーダーIDを変更
-                // tslint:disable-next-line:no-magic-numbers
-                `${orderIdPrefix}${`00${numberOfTryAuthorizeCreditCard.toString()}`.slice(-2)}`, amount, ttts.GMO.utils.util.Method.Lump, {
-                    cardNo: '4111111111111111',
-                    expire: '2020',
-                    holderName: 'TARO MOTIONPICTURE'
-                })(new ttts.repository.action.authorize.CreditCard(ttts.mongoose.connection), new ttts.repository.Organization(ttts.mongoose.connection), new ttts.repository.Transaction(ttts.mongoose.connection));
+                creditCardAuthorizeAction = yield request.post(`${API_ENDPOINT}/transactions/placeOrder/${transactionId}/actions/authorize/creditCard`, {
+                    auth: { bearer: accessToken },
+                    json: true,
+                    body: {
+                        // tslint:disable-next-line:no-magic-numbers
+                        orderId: `${orderIdPrefix}${`00${numberOfTryAuthorizeCreditCard.toString()}`.slice(-2)}`,
+                        amount: amount,
+                        method: ttts.GMO.utils.util.Method.Lump,
+                        creditCard: {
+                            cardNo: '4111111111111111',
+                            expire: '2020',
+                            holderName: 'TARO MOTIONPICTURE'
+                        }
+                    }
+                }).catch(handleError).then((body) => body);
             }
             catch (error) {
                 if (numberOfTryAuthorizeCreditCard >= MAX_NUMBER_OF_RETRY) {
