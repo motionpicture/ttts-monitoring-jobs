@@ -27,7 +27,11 @@ startScenarios({
     numberOfTrials: (process.argv[2] !== undefined) ? parseInt(process.argv[2], 10) : 10,
     // tslint:disable-next-line:no-magic-numbers
     intervals: (process.argv[3] !== undefined) ? parseInt(process.argv[3], 10) : 1000,
-    apiEndpoint: process.env.TTTS_API_ENDPOINT
+    apiEndpoint: process.env.TTTS_API_ENDPOINT,
+    // tslint:disable-next-line:no-magic-numbers
+    minDurationInSeconds: (process.argv[4] !== undefined) ? parseInt(process.argv[4], 10) : 300,
+    // tslint:disable-next-line:no-magic-numbers
+    maxDurationInSeconds: (process.argv[5] !== undefined) ? parseInt(process.argv[5], 10) : 800
 });
 function startScenarios(configurations) {
     if (process.env.NODE_ENV === 'production') {
@@ -48,14 +52,17 @@ function startScenarios(configurations) {
         let log = '';
         let result;
         const now = new Date();
-        // 販売者をランダムに選定
-        // tslint:disable-next-line:insecure-random
+        // 販売者固定
         const sellerIdentifier = 'TokyoTower';
         try {
+            const durationInSeconds = Math.floor(
             // tslint:disable-next-line:insecure-random no-magic-numbers
-            const duration = Math.floor(500000 * Math.random() + 300000);
+            (configurations.maxDurationInSeconds - configurations.minDurationInSeconds) * Math.random()
+                + configurations.minDurationInSeconds);
             // const duration = 10000;
-            const { transactionResult, numberOfTryAuthorizeCreditCard } = yield processPlaceOrder.main(sellerIdentifier, duration);
+            const { transactionResult, numberOfTryAuthorizeCreditCard } = 
+            // tslint:disable-next-line: no-magic-numbers
+            yield processPlaceOrder.main(sellerIdentifier, durationInSeconds * 1000);
             result = {
                 processNumber: processNumber,
                 transactionId: transactionResult.eventReservations[0].transaction,
@@ -142,9 +149,12 @@ function reportResults(configurations, results) {
 ### Configurations
 key  | value
 ------------- | -------------
-intervals  | ${configurations.intervals}
+command | ${process.argv.join(' ')}
+intervals  | ${configurations.intervals} seconds
 number of trials  | ${configurations.numberOfTrials.toString()}
 api endpoint  | ${configurations.apiEndpoint}
+min duration  | ${configurations.minDurationInSeconds} seconds
+max duration  | ${configurations.maxDurationInSeconds} seconds
 ### Reports
 - Please check out the csv report [here](${url}).
         `;

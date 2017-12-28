@@ -38,7 +38,7 @@ export async function main(organizationIdentifier: string, durationInMillisecond
             json: true
         }
     );
-    debug('認証情報を取得できました。', credentials.access_token);
+    debug('認証情報を取得できました。expires_in:', credentials.expires_in);
 
     // パフォーマンス検索
     debug('パフォーマンスを検索しています...');
@@ -55,7 +55,7 @@ export async function main(organizationIdentifier: string, durationInMillisecond
             }
         }
     ).catch(handleError).then((body) => <any[]>body.data);
-    debug('パフォーマンスが見つかりました。', performances.length);
+    debug(`${performances.length}件のパフォーマンスが見つかりました。`);
 
     if (performances.length === 0) {
         throw new Error('パフォーマンスがありません。');
@@ -83,7 +83,7 @@ export async function main(organizationIdentifier: string, durationInMillisecond
             }
         }
     ).catch(handleError).then((body) => body);
-    debug('取引が開始されました。', transaction.id);
+    debug('取引が開始されました。取引ID:', transaction.id);
 
     // 仮予約
     debug('券種を選択しています...');
@@ -96,7 +96,7 @@ export async function main(organizationIdentifier: string, durationInMillisecond
             auth: { bearer: credentials.access_token },
             json: true,
             body: {
-                perfomance_id: performance.id,
+                performance_id: performance.id,
                 offers: [{
                     ticket_type: ticketType.id,
                     watcher_name: ''
@@ -104,7 +104,7 @@ export async function main(organizationIdentifier: string, durationInMillisecond
             }
         }
     ).catch(handleError).then((body) => body);
-    debug('仮予約が作成されました。', seatReservationAuthorizeAction.result.tmpReservations[0].payment_no);
+    debug('仮予約が作成されました。購入番号:', seatReservationAuthorizeAction.result.tmpReservations[0].payment_no);
 
     debug('券種を変更しています...');
     // tslint:disable-next-line:no-magic-numbers
@@ -127,7 +127,7 @@ export async function main(organizationIdentifier: string, durationInMillisecond
             auth: { bearer: credentials.access_token },
             json: true,
             body: {
-                perfomance_id: performance.id,
+                performance_id: performance.id,
                 offers: [{
                     ticket_type: ticketType.id,
                     watcher_name: ''
@@ -135,7 +135,7 @@ export async function main(organizationIdentifier: string, durationInMillisecond
             }
         }
     ).catch(handleError).then((body) => body);
-    debug('仮予約が作成されました。', seatReservationAuthorizeAction.result.tmpReservations[0].payment_no);
+    debug('仮予約が作成されました。購入番号:', seatReservationAuthorizeAction.result.tmpReservations[0].payment_no);
 
     const amount = seatReservationAuthorizeAction.result.price;
     const orderIdPrefix = util.format(
@@ -150,7 +150,7 @@ export async function main(organizationIdentifier: string, durationInMillisecond
     const { creditCardAuthorizeAction, numberOfTryAuthorizeCreditCard } = await authorieCreditCardUntilSuccess(
         transaction.agent.id, transaction.id, orderIdPrefix, amount
     );
-    debug('オーソリがとれました。', (<ttts.factory.action.authorize.creditCard.IResult>creditCardAuthorizeAction.result).execTranResult.tranId);
+    debug('オーソリがとれました。取引ID:', (<ttts.factory.action.authorize.creditCard.IResult>creditCardAuthorizeAction.result).execTranResult.tranId);
 
     // 購入者情報登録
     debug('購入者情報を入力しています...');
@@ -171,7 +171,7 @@ export async function main(organizationIdentifier: string, durationInMillisecond
             body: customerContact
         }
     ).catch(handleError).then((body) => body);
-    debug('購入者情報が登録されました。', customerContact.tel);
+    debug('購入者情報が登録されました。tel:', customerContact.tel);
 
     // 確定
     debug('最終確認しています...');
@@ -187,9 +187,10 @@ export async function main(organizationIdentifier: string, durationInMillisecond
             }
         }
     ).catch(handleError).then((body) => <ttts.factory.transaction.placeOrder.IResult>body);
-    debug('取引確定です。', transactionResult.eventReservations[0].payment_no);
+    debug('取引確定です。購入番号:', transactionResult.eventReservations[0].payment_no);
 
     // send an email
+    debug('メールを送信`しています...`');
     const content = `Dear ${customerContact.last_name} ${customerContact.first_name}
 -------------------
 Thank you for the order below.
@@ -199,23 +200,25 @@ telephone: ${ transactionResult.order.orderInquiryKey.telephone}
 amount: ${ transactionResult.order.price} ${transactionResult.order.priceCurrency}
 -------------------
         `;
-    await ttts.Models.EmailQueue.create({
-        // tslint:disable-next-line:no-reserved-keywords
-        from: { // 送信者
-            address: 'noreply@example.com',
-            name: transaction.seller.name
-        },
-        to: { // 送信先
-            name: `${customerContact.last_name} ${customerContact.first_name} `,
-            address: customerContact.email
-        },
-        subject: `${transaction.seller.name} ツアー[${performance.attributes.day} -${performance.attributes.tour_number}]`,
-        content: { // 本文
-            mimetype: 'text/plain',
+
+    await ttts.service.transaction.placeOrder.sendEmail(
+        transaction.id,
+        {
+            sender: {
+                name: transaction.seller.name,
+                email: 'noreply@example.com'
+            },
+            toRecipient: {
+                name: `${customerContact.last_name} ${customerContact.first_name} `,
+                email: customerContact.email
+            },
+            about: `${transaction.seller.name} ツアー[${performance.attributes.day} -${performance.attributes.tour_number}]`,
             text: content
-        },
-        status: ttts.EmailQueueUtil.STATUS_UNSENT
-    });
+        }
+    )(
+        new ttts.repository.Task(ttts.mongoose.connection),
+        new ttts.repository.Transaction(ttts.mongoose.connection)
+        );
     debug('メールを送信しました。');
 
     return { transactionResult, numberOfTryAuthorizeCreditCard };
