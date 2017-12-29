@@ -19,9 +19,7 @@ const moment = require("moment");
 const request = require("request-promise-native");
 const timers_1 = require("timers");
 const processPlaceOrder = require("../../../../controller/scenarios/processPlaceOrder");
-const mongooseConnectionOptions_1 = require("../../../../mongooseConnectionOptions");
 const debug = createDebug('ttts-monitoring-jobs');
-ttts.mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default);
 startScenarios({
     // tslint:disable-next-line:no-magic-numbers
     numberOfTrials: (process.argv[2] !== undefined) ? parseInt(process.argv[2], 10) : 10,
@@ -117,7 +115,6 @@ numberOfTryAuthorizeCreditCard   : ${result.numberOfTryAuthorizeCreditCard}
         results.push(result);
         // 全プロセスが終了したらレポートを送信
         if (results.length === numberOfProcesses) {
-            ttts.mongoose.disconnect();
             yield reportResults(configurations, results);
         }
     }), configurations.intervals);

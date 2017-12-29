@@ -12,10 +12,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ttts = require("@motionpicture/ttts-domain");
 const createDebug = require("debug");
 const processPlaceOrder = require("../../../../controller/scenarios/processPlaceOrder");
-const mongooseConnectionOptions_1 = require("../../../../mongooseConnectionOptions");
 const debug = createDebug('ttts-monitoring-jobs');
 if (process.env.CONTINUOUS_SCENARIOS_STOPPED === '1') {
     process.exit(0);
@@ -23,7 +21,6 @@ if (process.env.CONTINUOUS_SCENARIOS_STOPPED === '1') {
 debug('start executing scenarios...');
 // tslint:disable-next-line:no-magic-numbers
 const INTERVAL = parseInt(process.env.CONTINUOUS_SCENARIOS_INTERVAL_IN_SECONDS, 10) * 1000;
-ttts.mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default);
 setInterval(() => {
     // 0-{INTERVAL}の間でランダムにインターバルを置いてシナリオを実行する
     // tslint:disable-next-line:insecure-random no-magic-numbers

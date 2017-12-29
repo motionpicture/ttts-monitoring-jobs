@@ -11,7 +11,6 @@ import * as request from 'request-promise-native';
 import { setInterval } from 'timers';
 
 import * as processPlaceOrder from '../../../../controller/scenarios/processPlaceOrder';
-import mongooseConnectionOptions from '../../../../mongooseConnectionOptions';
 
 const debug = createDebug('ttts-monitoring-jobs');
 
@@ -53,8 +52,6 @@ interface IResult {
     price: string;
     numberOfTryAuthorizeCreditCard: string;
 }
-
-ttts.mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions);
 
 startScenarios({
     // tslint:disable-next-line:no-magic-numbers
@@ -162,7 +159,6 @@ numberOfTryAuthorizeCreditCard   : ${result.numberOfTryAuthorizeCreditCard}
 
             // 全プロセスが終了したらレポートを送信
             if (results.length === numberOfProcesses) {
-                ttts.mongoose.disconnect();
                 await reportResults(configurations, results);
             }
         },
