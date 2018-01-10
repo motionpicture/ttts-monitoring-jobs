@@ -1,33 +1,18 @@
 <img src="https://motionpicture.jp/images/common/logo_01.svg" alt="motionpicture" title="motionpicture" align="right" height="56" width="98"/>
 
-# TTTS 監視ジョブアプリケーション
+# 東京タワーチケット予約システム監視ジョブアプリケーション
 
-## Getting Started
-
-### インフラ
-基本的にnode.jsのウェブアプリケーション。
-AzureのWebAppsでWebJobsを動作させる想定。
-
-### 言語
-実態としては、linuxあるいはwindows上でのnode.js。プログラミング言語としては、TypeScript。
-
-* [TypeScript](https://www.typescriptlang.org/)
-
-### 開発方法
-npmでパッケージをインストール。
-
-```shell
-npm install
-```
-* [npm](https://www.npmjs.com/)
+[![CircleCI](https://circleci.com/gh/motionpicture/ttts-monitoring-jobs.svg?style=svg&circle-token=3f19d3ae6b688567589a4d877acc4a45cc6cc737)](https://circleci.com/gh/motionpicture/ttts-monitoring-jobs)
 
 
-typescriptをjavascriptにコンパイル。
+## Table of contents
 
-```shell
-npm run build
-```
+* [Usage](#usage)
+* [Code Samples](#code-samples)
+* [Jsdoc](#jsdoc)
+* [License](#license)
 
+## Usage
 
 ### Environment variables
 
@@ -51,28 +36,14 @@ npm run build
 | `BACKLOG_API_KEY`                         | true     |                        | バックログAPI key                 |
 | `CONTINUOUS_SCENARIOS_STOPPED`            | true     | 1 or 0                 | 継続的なシナリオを止めるかどうか         |
 
+## Code Samples
 
-## tslint
+No samples.
 
-コード品質チェックをtslintで行う。
-* [tslint](https://github.com/palantir/tslint)
-* [tslint-microsoft-contrib](https://github.com/Microsoft/tslint-microsoft-contrib)
+## Jsdoc
 
-`npm run check`でチェック実行。
+`npm run doc` emits jsdoc to ./doc.
 
+## License
 
-## パッケージ脆弱性のチェック
-
-* [nsp](https://www.npmjs.com/package/nsp)
-
-
-## clean
-`npm run clean`で不要なソース削除。
-
-
-## テスト
-`npm test`でテスト実行。
-
-
-## ドキュメント
-`npm run doc`でjsdocが作成されます。
+UNLICENSED
