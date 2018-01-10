@@ -35,10 +35,12 @@ const placeOrderTransactions = new tower.service.transaction.PlaceOrder({
 export async function main(organizationIdentifier: string, durationInMilliseconds: number) {
     // パフォーマンス検索
     debug('パフォーマンスを検索しています...');
+    // tslint:disable-next-line:insecure-random no-magic-numbers
+    const daysAfter = Math.floor(30 * Math.random());
     const searchPerformancesResult = await events.searchPerformances({
-        startFrom: moment().toDate(),
+        startFrom: moment().add(daysAfter - 1, 'days').toDate(),
         // tslint:disable-next-line:no-magic-numbers
-        startThrough: moment().add(1, 'month').toDate()
+        startThrough: moment().add(daysAfter, 'days').toDate()
     });
     debug(`${searchPerformancesResult.data.length}件のパフォーマンスが見つかりました。`);
     const performances = searchPerformancesResult.data;
@@ -54,6 +56,7 @@ export async function main(organizationIdentifier: string, durationInMillisecond
 
     // tslint:disable-next-line:insecure-random
     const performance = performances[Math.floor(performances.length * Math.random())];
+    debug('パフォーマンスを決めました。', performance.id);
 
     // 取引開始
     const transaction = await placeOrderTransactions.start({

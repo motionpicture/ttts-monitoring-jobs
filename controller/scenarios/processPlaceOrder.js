@@ -40,10 +40,12 @@ function main(organizationIdentifier, durationInMilliseconds) {
     return __awaiter(this, void 0, void 0, function* () {
         // パフォーマンス検索
         debug('パフォーマンスを検索しています...');
+        // tslint:disable-next-line:insecure-random no-magic-numbers
+        const daysAfter = Math.floor(30 * Math.random());
         const searchPerformancesResult = yield events.searchPerformances({
-            startFrom: moment().toDate(),
+            startFrom: moment().add(daysAfter - 1, 'days').toDate(),
             // tslint:disable-next-line:no-magic-numbers
-            startThrough: moment().add(1, 'month').toDate()
+            startThrough: moment().add(daysAfter, 'days').toDate()
         });
         debug(`${searchPerformancesResult.data.length}件のパフォーマンスが見つかりました。`);
         const performances = searchPerformancesResult.data;
@@ -56,6 +58,7 @@ function main(organizationIdentifier, durationInMilliseconds) {
         yield wait(durationInMilliseconds / 6);
         // tslint:disable-next-line:insecure-random
         const performance = performances[Math.floor(performances.length * Math.random())];
+        debug('パフォーマンスを決めました。', performance.id);
         // 取引開始
         const transaction = yield placeOrderTransactions.start({
             // tslint:disable-next-line:no-magic-numbers
