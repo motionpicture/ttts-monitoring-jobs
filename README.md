@@ -38,7 +38,7 @@
 
 ## Code Samples
 
-Code sample are [here](https://github.com/motionpicture/ttts-api/tree/master/example).
+No samples.
 
 ## Jsdoc
 
