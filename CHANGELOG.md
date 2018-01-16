@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Added
 
 ### Changed
+- 注文シナリオを調整。
+- シナリオ負荷実行結果を調整。
 
 ### Deprecated
 

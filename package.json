@@ -10,7 +10,7 @@
   ],
   "dependencies": {
     "@motionpicture/ttts-api-nodejs-client": "0.0.0-alpha.8",
-    "@motionpicture/ttts-domain": "^12.0.0-alpha.69",
+    "@motionpicture/ttts-domain": "^12.0.0-alpha.79",
     "debug": "^3.1.0",
     "json2csv": "^3.11.5",
     "moment": "^2.20.1",
@@ -28,9 +28,9 @@
     "mocha": "^4.1.0",
     "nsp": "^2.8.1",
     "rimraf": "^2.6.2",
-    "snyk": "^1.67.0",
-    "tslint": "^5.8.0",
-    "tslint-microsoft-contrib": "^5.0.1",
+    "snyk": "^1.68.0",
+    "tslint": "^5.9.1",
+    "tslint-microsoft-contrib": "^5.0.2",
     "typescript": "^2.6.2"
   },
   "engines": {
