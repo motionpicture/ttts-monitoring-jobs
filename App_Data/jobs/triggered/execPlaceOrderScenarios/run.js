@@ -142,16 +142,31 @@ function reportResults(configurations, results) {
             expiryDate: moment().add(3, 'months').toDate()
         })();
         const subject = 'Completion of TTTS placeOrder transaction loadtest';
+        const numbersOfResult = {
+            ok: results.filter((r) => r.orderNumber.length > 0).length,
+            clientError: results.filter((r) => /^4\d{2}$/.test(r.errorCode)).length,
+            serverError: results.filter((r) => /^5\d{2}$/.test(r.errorCode)).length,
+            unknown: results.filter((r) => r.orderNumber.length === 0 && r.errorCode.length === 0).length,
+        };
         const text = `## ${subject}
 ### Configurations
 key  | value
 ------------- | -------------
 command | ${process.argv.join(' ')}
-intervals  | ${configurations.intervals} seconds
+intervals  | ${configurations.intervals} milliseconds
 number of trials  | ${configurations.numberOfTrials.toString()}
 api endpoint  | ${configurations.apiEndpoint}
 min duration  | ${configurations.minDurationInSeconds} seconds
 max duration  | ${configurations.maxDurationInSeconds} seconds
+
+### Summary
+status | ratio | number of results
+------------- | -------------
+ok | ${Math.floor(100 * numbersOfResult.ok / results.length)}% | ${numbersOfResult.ok}/${results.length}
+4xx  | ${Math.floor(100 * numbersOfResult.clientError / results.length)}% | ${numbersOfResult.clientError}/${results.length}
+5xx  | ${Math.floor(100 * numbersOfResult.serverError / results.length)}% | ${numbersOfResult.serverError}/${results.length}
+unknown | ${Math.floor(100 * numbersOfResult.unknown / results.length)}% | ${numbersOfResult.unknown}/${results.length}
+
 ### Reports
 - Please check out the csv report [here](${url}).
         `;

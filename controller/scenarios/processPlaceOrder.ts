@@ -36,14 +36,16 @@ export async function main(organizationIdentifier: string, durationInMillisecond
     // パフォーマンス検索
     debug('パフォーマンスを検索しています...');
     // tslint:disable-next-line:insecure-random no-magic-numbers
-    const daysAfter = Math.floor(30 * Math.random());
+    const daysAfter = Math.floor(90 * Math.random());
     const searchPerformancesResult = await events.searchPerformances({
         startFrom: moment().add(daysAfter - 1, 'days').toDate(),
         // tslint:disable-next-line:no-magic-numbers
         startThrough: moment().add(daysAfter, 'days').toDate()
     });
     debug(`${searchPerformancesResult.data.length}件のパフォーマンスが見つかりました。`);
-    const performances = searchPerformancesResult.data;
+    let performances = searchPerformancesResult.data;
+    // 空席ありのイベントに絞る(販売情報がないことがあるので、あるものだけに絞る)
+    performances = performances.filter((p) => p.remainingAttendeeCapacity > 0 && p.ticketTypes.length > 0);
 
     if (performances.length === 0) {
         throw new Error('パフォーマンスがありません。');
