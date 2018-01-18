@@ -3,14 +3,16 @@
  * @module
  */
 
-import * as tower from '@motionpicture/ttts-api-nodejs-client';
+import * as tttsapi from '@motionpicture/ttts-api-nodejs-client';
 import * as createDebug from 'debug';
+import { CREATED } from 'http-status';
 import * as moment from 'moment';
+import * as request from 'request-promise-native';
 import * as util from 'util';
 
 const debug = createDebug('ttts-monitoring-jobs');
 
-const auth = new tower.auth.ClientCredentials({
+const auth = new tttsapi.auth.ClientCredentials({
     domain: <string>process.env.TTTS_API_AUTHORIZE_SERVER_DOMAIN,
     clientId: <string>process.env.TTTS_API_CLIENT_ID,
     clientSecret: <string>process.env.TTTS_API_CLIENT_SECRET,
@@ -21,12 +23,12 @@ const auth = new tower.auth.ClientCredentials({
     state: 'teststate'
 });
 
-const events = new tower.service.Event({
+const events = new tttsapi.service.Event({
     endpoint: <string>process.env.TTTS_API_ENDPOINT,
     auth: auth
 });
 
-const placeOrderTransactions = new tower.service.transaction.PlaceOrder({
+const placeOrderTransactions = new tttsapi.service.transaction.PlaceOrder({
     endpoint: <string>process.env.TTTS_API_ENDPOINT,
     auth: auth
 });
@@ -36,7 +38,7 @@ export async function main(organizationIdentifier: string, durationInMillisecond
     // パフォーマンス検索
     debug('パフォーマンスを検索しています...');
     // tslint:disable-next-line:insecure-random no-magic-numbers
-    const daysAfter = Math.floor(90 * Math.random());
+    const daysAfter = Math.floor(Math.random() * 90);
     const searchPerformancesResult = await events.searchPerformances({
         startFrom: moment().add(daysAfter - 1, 'days').toDate(),
         // tslint:disable-next-line:no-magic-numbers
@@ -51,6 +53,40 @@ export async function main(organizationIdentifier: string, durationInMillisecond
         throw new Error('パフォーマンスがありません。');
     }
 
+    // waiter許可証を取得
+    const passportToken = await request.post({
+        resolveWithFullResponse: true,
+        simple: false,
+        url: `${process.env.WAITER_ENDPOINT}/passports`,
+        json: true,
+        body: {
+            scope: `placeOrderTransaction.${organizationIdentifier}`
+        }
+    }).then((res) => {
+        debug('WAITERから応答がありました。', res.statusCode);
+        if (res.statusCode !== CREATED) {
+            const error = new tttsapi.transporters.RequestError('filtered by WAITER.');
+            error.code = res.statusCode;
+            error.errors = [
+                new tttsapi.factory.errors.RateLimitExceeded()
+            ];
+
+            throw error;
+        }
+
+        return res.body.token;
+    });
+
+    // 取引開始
+    const transaction = await placeOrderTransactions.start({
+        // tslint:disable-next-line:no-magic-numbers
+        expires: moment().add(15, 'minutes').toDate(),
+        sellerIdentifier: organizationIdentifier,
+        purchaserGroup: <any>'Customer',
+        passportToken: passportToken
+    });
+    debug('取引が開始されました。取引ID:', transaction.id);
+
     // イベント選択時間
     debug('パフォーマンスを決めています...');
     // tslint:disable-next-line:no-magic-numbers
@@ -59,15 +95,6 @@ export async function main(organizationIdentifier: string, durationInMillisecond
     // tslint:disable-next-line:insecure-random
     const performance = performances[Math.floor(performances.length * Math.random())];
     debug('パフォーマンスを決めました。', performance.id);
-
-    // 取引開始
-    const transaction = await placeOrderTransactions.start({
-        // tslint:disable-next-line:no-magic-numbers
-        expires: moment().add(15, 'minutes').toDate(),
-        sellerIdentifier: organizationIdentifier,
-        purchaserGroup: <any>'Customer'
-    });
-    debug('取引が開始されました。取引ID:', transaction.id);
 
     // 仮予約
     debug('券種を選択しています...');

@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - GMO売上健康診断ジョブを追加。
 
 ### Changed
+- 注文取引シナリオにWAITERを結合。
 
 ### Deprecated
 
