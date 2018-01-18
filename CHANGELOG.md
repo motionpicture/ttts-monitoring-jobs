@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- GMO売上健康診断ジョブを追加。
 
 ### Changed
 

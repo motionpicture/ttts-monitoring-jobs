@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  */
 const createDebug = require("debug");
 const Controller = require("../../../../controller/reportGMOSales");
-const debug = createDebug('sskts-monitoring-jobs');
+const debug = createDebug('ttts-monitoring-jobs');
 Controller.main().then(() => {
     debug('success!');
 }).catch((err) => {
