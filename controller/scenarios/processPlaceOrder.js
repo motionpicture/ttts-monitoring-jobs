@@ -12,12 +12,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const tower = require("@motionpicture/ttts-api-nodejs-client");
+const tttsapi = require("@motionpicture/ttts-api-nodejs-client");
 const createDebug = require("debug");
+const http_status_1 = require("http-status");
 const moment = require("moment");
+const request = require("request-promise-native");
 const util = require("util");
 const debug = createDebug('ttts-monitoring-jobs');
-const auth = new tower.auth.ClientCredentials({
+const auth = new tttsapi.auth.ClientCredentials({
     domain: process.env.TTTS_API_AUTHORIZE_SERVER_DOMAIN,
     clientId: process.env.TTTS_API_CLIENT_ID,
     clientSecret: process.env.TTTS_API_CLIENT_SECRET,
@@ -27,11 +29,11 @@ const auth = new tower.auth.ClientCredentials({
     ],
     state: 'teststate'
 });
-const events = new tower.service.Event({
+const events = new tttsapi.service.Event({
     endpoint: process.env.TTTS_API_ENDPOINT,
     auth: auth
 });
-const placeOrderTransactions = new tower.service.transaction.PlaceOrder({
+const placeOrderTransactions = new tttsapi.service.transaction.PlaceOrder({
     endpoint: process.env.TTTS_API_ENDPOINT,
     auth: auth
 });
@@ -41,7 +43,7 @@ function main(organizationIdentifier, durationInMilliseconds) {
         // パフォーマンス検索
         debug('パフォーマンスを検索しています...');
         // tslint:disable-next-line:insecure-random no-magic-numbers
-        const daysAfter = Math.floor(90 * Math.random());
+        const daysAfter = Math.floor(Math.random() * 90);
         const searchPerformancesResult = yield events.searchPerformances({
             startFrom: moment().add(daysAfter - 1, 'days').toDate(),
             // tslint:disable-next-line:no-magic-numbers
@@ -54,6 +56,36 @@ function main(organizationIdentifier, durationInMilliseconds) {
         if (performances.length === 0) {
             throw new Error('パフォーマンスがありません。');
         }
+        // waiter許可証を取得
+        const passportToken = yield request.post({
+            resolveWithFullResponse: true,
+            simple: false,
+            url: `${process.env.WAITER_ENDPOINT}/passports`,
+            json: true,
+            body: {
+                scope: `placeOrderTransaction.${organizationIdentifier}`
+            }
+        }).then((res) => {
+            debug('WAITERから応答がありました。', res.statusCode);
+            if (res.statusCode !== http_status_1.CREATED) {
+                const error = new tttsapi.transporters.RequestError('filtered by WAITER.');
+                error.code = res.statusCode;
+                error.errors = [
+                    new tttsapi.factory.errors.RateLimitExceeded()
+                ];
+                throw error;
+            }
+            return res.body.token;
+        });
+        // 取引開始
+        const transaction = yield placeOrderTransactions.start({
+            // tslint:disable-next-line:no-magic-numbers
+            expires: moment().add(15, 'minutes').toDate(),
+            sellerIdentifier: organizationIdentifier,
+            purchaserGroup: 'Customer',
+            passportToken: passportToken
+        });
+        debug('取引が開始されました。取引ID:', transaction.id);
         // イベント選択時間
         debug('パフォーマンスを決めています...');
         // tslint:disable-next-line:no-magic-numbers
@@ -61,14 +93,6 @@ function main(organizationIdentifier, durationInMilliseconds) {
         // tslint:disable-next-line:insecure-random
         const performance = performances[Math.floor(performances.length * Math.random())];
         debug('パフォーマンスを決めました。', performance.id);
-        // 取引開始
-        const transaction = yield placeOrderTransactions.start({
-            // tslint:disable-next-line:no-magic-numbers
-            expires: moment().add(15, 'minutes').toDate(),
-            sellerIdentifier: organizationIdentifier,
-            purchaserGroup: 'Customer'
-        });
-        debug('取引が開始されました。取引ID:', transaction.id);
         // 仮予約
         debug('券種を選択しています...');
         // tslint:disable-next-line:no-magic-numbers

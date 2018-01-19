@@ -5,7 +5,7 @@
 import * as createDebug from 'debug';
 import * as Controller from '../../../../controller/reportGMOSales';
 
-const debug = createDebug('sskts-monitoring-jobs');
+const debug = createDebug('ttts-monitoring-jobs');
 
 Controller.main().then(() => {
     debug('success!');

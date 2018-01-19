@@ -35,6 +35,7 @@
 | `TTTS_API_ENDPOINT`                       | true     |                        | TTTS APIエンドポイント              |
 | `BACKLOG_API_KEY`                         | true     |                        | バックログAPI key                 |
 | `CONTINUOUS_SCENARIOS_STOPPED`            | true     | 1 or 0                 | 継続的なシナリオを止めるかどうか         |
+| `WAITER_ENDPOINT`                         | true     |                        | シナリオで使用するWAITERエンドポイント     |
 
 ## Code Samples
 

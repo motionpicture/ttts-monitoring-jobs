@@ -17,6 +17,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Security
 
 
+## v0.1.0 - 2018-01-19
+### Added
+- GMO売上健康診断ジョブを追加。
+
+### Changed
+- 注文取引シナリオにWAITERを結合。
+
 ## v0.0.3 - 2018-01-17
 ### Changed
 - update ttts-domain.
