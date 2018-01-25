@@ -5,6 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
+- スタッフによる注文シナリオを追加。
 
 ### Changed
 
