@@ -34,7 +34,7 @@ setInterval(
             async () => {
                 try {
                     // tslint:disable-next-line:insecure-random no-magic-numbers
-                    const duration = 30000;
+                    const duration = 300000;
                     await Scenario.main(organizationIdentifier, duration, USERNAME, PASSWORD);
                 } catch (error) {
                     console.error(error, 'organizationIdentifier:', organizationIdentifier);

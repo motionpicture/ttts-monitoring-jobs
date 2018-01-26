@@ -34,7 +34,7 @@ setInterval(() => {
     setTimeout(() => __awaiter(this, void 0, void 0, function* () {
         try {
             // tslint:disable-next-line:insecure-random no-magic-numbers
-            const duration = 30000;
+            const duration = 300000;
             yield Scenario.main(organizationIdentifier, duration, USERNAME, PASSWORD);
         }
         catch (error) {
