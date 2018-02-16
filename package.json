@@ -9,7 +9,7 @@
     }
   ],
   "dependencies": {
-    "@motionpicture/ttts-api-nodejs-client": "0.0.0",
+    "@motionpicture/ttts-api-nodejs-client": "0.0.2",
     "@motionpicture/ttts-domain": "^12.1.0",
     "debug": "^3.1.0",
     "http-status": "^1.0.1",

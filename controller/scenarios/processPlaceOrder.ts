@@ -165,7 +165,7 @@ export async function main(organizationIdentifier: string, durationInMillisecond
         tel: '09012345678',
         gender: '0',
         age: '',
-        address: ''
+        address: 'JP'
     };
     customerContact = await placeOrderTransactions.setCustomerContact({
         transactionId: transaction.id,

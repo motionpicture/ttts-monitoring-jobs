@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ### Removed
 
 ### Fixed
+- 購入者情報を登録できない注文シナリオのバグを修正。
 
 ### Security
 

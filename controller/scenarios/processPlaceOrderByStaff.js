@@ -126,7 +126,7 @@ function main(organizationIdentifier, durationInMilliseconds, username, password
             tel: customer.telephone,
             gender: '0',
             age: '',
-            address: ''
+            address: 'JP'
         };
         customerContact = yield placeOrderTransactions.setCustomerContact({
             transactionId: transaction.id,

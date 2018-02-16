@@ -152,7 +152,7 @@ function main(organizationIdentifier, durationInMilliseconds) {
             tel: '09012345678',
             gender: '0',
             age: '',
-            address: ''
+            address: 'JP'
         };
         customerContact = yield placeOrderTransactions.setCustomerContact({
             transactionId: transaction.id,
