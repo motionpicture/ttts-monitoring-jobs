@@ -5,21 +5,30 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## Unreleased
 ### Added
-- スタッフによる注文シナリオを追加。
 
 ### Changed
-
-- install ttts-domain@13.3.0
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
-- 購入者情報を登録できない注文シナリオのバグを修正。
 
 ### Security
 
+## v1.0.0 - 2018-12-23
+
+### Added
+
+- スタッフによる注文シナリオを追加。
+
+### Changed
+
+- install ttts-domain@13.3.0
+
+### Fixed
+
+- 購入者情報を登録できない注文シナリオのバグを修正。
 
 ## v0.1.0 - 2018-01-19
 ### Added
