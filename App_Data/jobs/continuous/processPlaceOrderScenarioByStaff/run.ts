@@ -1,15 +1,15 @@
 /**
- * 注文シナリオをランダムに実行し続ける
+ * スタッフによる注文シナリオをランダムに実行し続ける
  * @ignore
  */
 
 import * as createDebug from 'debug';
 
-import * as processPlaceOrder from '../../../../controller/scenarios/processPlaceOrder';
+import * as Scenario from '../../../../controller/scenarios/processPlaceOrderByStaff';
 
 const debug = createDebug('ttts-monitoring-jobs');
 
-if (process.env.CONTINUOUS_SCENARIOS_STOPPED === '1') {
+if (process.env.CONTINUOUS_SCENARIOS_BY_STAFF_STOPPED === '1') {
     process.exit(0);
 }
 
@@ -20,7 +20,9 @@ if (process.env.NODE_ENV === 'production') {
 debug('start executing scenarios...');
 
 // tslint:disable-next-line:no-magic-numbers
-const INTERVAL = parseInt(<string>process.env.CONTINUOUS_SCENARIOS_INTERVAL_IN_SECONDS, 10) * 1000;
+const INTERVAL = parseInt(<string>process.env.CONTINUOUS_SCENARIOS_BY_STAFF_INTERVAL_IN_SECONDS, 10) * 1000;
+const USERNAME = <string>process.env.CONTINUOUS_SCENARIOS_BY_STAFF_USERNAME;
+const PASSWORD = <string>process.env.CONTINUOUS_SCENARIOS_BY_STAFF_PASSWORD;
 setInterval(
     () => {
         // 0-{INTERVAL}の間でランダムにインターバルを置いてシナリオを実行する
@@ -32,9 +34,8 @@ setInterval(
             async () => {
                 try {
                     // tslint:disable-next-line:insecure-random no-magic-numbers
-                    const duration = Math.floor(Math.random() * 500000 + 300000);
-                    // const duration = 10000;
-                    await processPlaceOrder.main(organizationIdentifier, duration);
+                    const duration = 300000;
+                    await Scenario.main(organizationIdentifier, duration, USERNAME, PASSWORD);
                 } catch (error) {
                     console.error(error, 'organizationIdentifier:', organizationIdentifier);
                 }

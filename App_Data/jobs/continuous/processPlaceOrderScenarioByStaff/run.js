@@ -1,6 +1,6 @@
 "use strict";
 /**
- * 注文シナリオをランダムに実行し続ける
+ * スタッフによる注文シナリオをランダムに実行し続ける
  * @ignore
  */
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -13,9 +13,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const createDebug = require("debug");
-const processPlaceOrder = require("../../../../controller/scenarios/processPlaceOrder");
+const Scenario = require("../../../../controller/scenarios/processPlaceOrderByStaff");
 const debug = createDebug('ttts-monitoring-jobs');
-if (process.env.CONTINUOUS_SCENARIOS_STOPPED === '1') {
+if (process.env.CONTINUOUS_SCENARIOS_BY_STAFF_STOPPED === '1') {
     process.exit(0);
 }
 if (process.env.NODE_ENV === 'production') {
@@ -23,7 +23,9 @@ if (process.env.NODE_ENV === 'production') {
 }
 debug('start executing scenarios...');
 // tslint:disable-next-line:no-magic-numbers
-const INTERVAL = parseInt(process.env.CONTINUOUS_SCENARIOS_INTERVAL_IN_SECONDS, 10) * 1000;
+const INTERVAL = parseInt(process.env.CONTINUOUS_SCENARIOS_BY_STAFF_INTERVAL_IN_SECONDS, 10) * 1000;
+const USERNAME = process.env.CONTINUOUS_SCENARIOS_BY_STAFF_USERNAME;
+const PASSWORD = process.env.CONTINUOUS_SCENARIOS_BY_STAFF_PASSWORD;
 setInterval(() => {
     // 0-{INTERVAL}の間でランダムにインターバルを置いてシナリオを実行する
     // tslint:disable-next-line:insecure-random no-magic-numbers
@@ -32,9 +34,8 @@ setInterval(() => {
     setTimeout(() => __awaiter(this, void 0, void 0, function* () {
         try {
             // tslint:disable-next-line:insecure-random no-magic-numbers
-            const duration = Math.floor(Math.random() * 500000 + 300000);
-            // const duration = 10000;
-            yield processPlaceOrder.main(organizationIdentifier, duration);
+            const duration = 300000;
+            yield Scenario.main(organizationIdentifier, duration, USERNAME, PASSWORD);
         }
         catch (error) {
             console.error(error, 'organizationIdentifier:', organizationIdentifier);
