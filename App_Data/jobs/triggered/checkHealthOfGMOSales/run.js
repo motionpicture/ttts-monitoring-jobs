@@ -16,6 +16,7 @@ const ttts = require("@motionpicture/ttts-domain");
 const createDebug = require("debug");
 const moment = require("moment");
 const mongooseConnectionOptions_1 = require("../../../../mongooseConnectionOptions");
+const CHECK_GMO_SALES_HEALTH_DISABLED = process.env.CHECK_GMO_SALES_HEALTH_DISABLED === '1';
 const debug = createDebug('ttts-monitoring-jobs');
 /**
  * 集計の時間単位(秒)
@@ -23,6 +24,9 @@ const debug = createDebug('ttts-monitoring-jobs');
 const AGGREGATION_UNIT_TIME_IN_SECONDS = 86400;
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
+        if (CHECK_GMO_SALES_HEALTH_DISABLED) {
+            return;
+        }
         ttts.mongoose.connect(process.env.MONGOLAB_URI, mongooseConnectionOptions_1.default);
         const gmoNotificationRepo = new ttts.repository.GMONotification(ttts.mongoose.connection);
         const transactionRepo = new ttts.repository.Transaction(ttts.mongoose.connection);

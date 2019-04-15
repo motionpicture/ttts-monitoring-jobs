@@ -9,6 +9,7 @@ import * as moment from 'moment';
 
 import mongooseConnectionOptions from '../../../../mongooseConnectionOptions';
 
+const CHECK_GMO_SALES_HEALTH_DISABLED = process.env.CHECK_GMO_SALES_HEALTH_DISABLED === '1';
 const debug = createDebug('ttts-monitoring-jobs');
 
 /**
@@ -17,6 +18,10 @@ const debug = createDebug('ttts-monitoring-jobs');
 const AGGREGATION_UNIT_TIME_IN_SECONDS = 86400;
 
 export async function main() {
+    if (CHECK_GMO_SALES_HEALTH_DISABLED) {
+        return;
+    }
+
     ttts.mongoose.connect(<string>process.env.MONGOLAB_URI, mongooseConnectionOptions);
 
     const gmoNotificationRepo = new ttts.repository.GMONotification(ttts.mongoose.connection);
