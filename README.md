@@ -41,6 +41,7 @@
 | `TTTS_ADMIN_API_CLIENT_ID`                            | true     |                        | 管理者APIクライアントID                              |
 | `TTTS_ADMIN_API_CLIENT_SECRET`                        | true     |                        | 管理者APIクライアントシークレット                    |
 | `TTTS_ADMIN_API_AUTHORIZE_SERVER_DOMAIN`              | true     |                        | 管理者API認可サーバードメイン                        |
+| `CHECK_GMO_SALES_HEALTH_DISABLED`                     | false    | 1 or 0                 | GMO売上健康診断無効化フラグ                          |
 
 ## License
 

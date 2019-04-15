@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ### Changed
 
+- GMO売上健康診断無効化フラグを追加
+
 ### Deprecated
 
 ### Removed
